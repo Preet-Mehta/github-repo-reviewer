@@ -1,60 +1,68 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GitHub Webhook App</title>
-  </head>
-  <body>
+</head>
+<body>
     <h1>Welcome to GitHub Webhook App</h1>
-    <a id="login-link" href="/auth/github">Login with GitHub</a>
-    <div id="repos" style="display: none">
-      <h2>Your Repositories</h2>
-      <select id="repo-dropdown"></select>
-      <button id="create-webhook-btn">Create Webhook</button>
+    <div id="auth">
+        <label for="pat">Enter your GitHub Personal Access Token:</label>
+        <input type="text" id="pat" name="pat">
+        <button id="submit-pat-btn">Submit</button>
+    </div>
+    <div id="repos" style="display: none;">
+        <h2>Your Repositories</h2>
+        <select id="repo-dropdown"></select>
+        <button id="create-webhook-btn">Create Webhook</button>
     </div>
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        fetch("/repos")
-          .then((response) => {
-            if (response.status === 401) {
-              document.getElementById("login-link").style.display = "block";
-              return Promise.reject("Not authenticated");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            const repoDropdown = document.getElementById("repo-dropdown");
-            data.forEach((repo) => {
-              const option = document.createElement("option");
-              option.value = repo.full_name;
-              option.textContent = repo.full_name;
-              repoDropdown.appendChild(option);
-            });
-            document.getElementById("repos").style.display = "block";
-          })
-          .catch((error) => {
-            console.error("Error fetching repositories:", error);
-          });
-
-        document
-          .getElementById("create-webhook-btn")
-          .addEventListener("click", () => {
-            const repoFullName = document.getElementById("repo-dropdown").value;
-            fetch("/create-webhook", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ repoFullName }),
+        document.getElementById('submit-pat-btn').addEventListener('click', () => {
+            const pat = document.getElementById('pat').value;
+            fetch('/repos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ pat })
             })
-              .then((response) => response.json())
-              .then((data) => {
-                console.log("Webhook created:", data);
-              })
-              .catch((error) => {
-                console.error("Error creating webhook:", error);
-              });
-          });
-      });
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error(data.error);
+                    return;
+                }
+                const repoDropdown = document.getElementById('repo-dropdown');
+                repoDropdown.innerHTML = ''; // Clear previous options
+                data.forEach(repo => {
+                    const option = document.createElement('option');
+                    option.value = repo.full_name;
+                    option.textContent = repo.full_name;
+                    repoDropdown.appendChild(option);
+                });
+                document.getElementById('repos').style.display = 'block';
+                document.getElementById('auth').style.display = 'none';
+            })
+            .catch(error => {
+                console.error('Error fetching repositories:', error);
+            });
+        });
+
+        document.getElementById('create-webhook-btn').addEventListener('click', () => {
+            const repoFullName = document.getElementById('repo-dropdown').value;
+            const pat = document.getElementById('pat').value;
+            fetch('/create-webhook', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ repoFullName, pat })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Webhook created:', data);
+            })
+            .catch(error => {
+                console.error('Error creating webhook:', error);
+            });
+        });
     </script>
-  </body>
+</body>
 </html>
