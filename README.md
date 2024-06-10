@@ -38,6 +38,7 @@ Create a .env file in the root directory of the project and add the following en
 
 ```sh
 OPENAI_API_KEY=your_openai_api_key_here
+NGROK_URL=your_ngrok_url_here
 ```
 
 Replace `your_openai_api_key_here` with your actual OpenAI API key.
@@ -69,7 +70,7 @@ ngrok http 3000
 
 ### Step 6: Update Webhook URL in app.js
 
-In `app.js`, replace `http://yourdomain.com/webhook` with your NGROK URL followed by `/webhook`. For example:
+In `.env`, replace `your_ngrok_url_here` with your NGROK URL **without the trailing `/`**. For example:
 
 ```javascript
 
