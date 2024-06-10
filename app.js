@@ -62,7 +62,7 @@ app.post("/create-webhook", (req, res) => {
         active: true,
         events: ["push"],
         config: {
-          url: "http://yourdomain.com/webhook",
+          url: `${process.env.NGROK_URL}/webhook`,
           content_type: "json",
         },
       },
